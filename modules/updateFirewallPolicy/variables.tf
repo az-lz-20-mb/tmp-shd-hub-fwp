@@ -1,20 +1,26 @@
-variable "resource_group_name" {
-  type = map(object({
-    rg = string
-    location = string
-  }))
-}
+# variable "resource_group_name" {
+#   type = map(object({
+#     rg = string
+#     location = string
+#   }))
+# }
 
-variable "firewall_policy_names" {
+variable "firewall_policies" {
   type = map(object({
-    name = string
-    location = string
-    # tls_inspection_key_vault_secret_id = string
-    intrusion_detection_mode = string
-    intrusion_detection_traffic_bypass = list(object({
-      name = string
-      protocol = string
+    name                = string
+    resource_group_name = string
+    location            = string
+    intrusion_detection = optional(object({
+      mode = optional(string, "Alert")
+      signature_overrides = optional(map(string))
+      traffic_bypass = optional(object({
+        name                  = string
+        protocol              = string
+        destination_addresses = optional(list(string))
+        destination_ip_groups = optional(list(string))
+        source_addresses      = optional(list(string))
+        source_ip_groups      = optional(list(string))
+      }))
     }))
   }))
-  description = "A map of firewall policy definitions."
 }

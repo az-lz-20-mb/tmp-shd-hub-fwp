@@ -1,25 +1,42 @@
-module "firewall_policy" {
-  source = "git::https://github.com/Azure/terraform-azurerm-avm-res-network-firewallpolicy.git"
-  for_each = var.firewall_policy_names  # Expecting a map of policy names
+# modules/firewall_policy/main.tf
+resource "azurerm_firewall_policy" "this" {
+  for_each = var.firewall_policies
 
-  name                = each.value.name  # Use the name from the map
-  location            = lookup(var.resource_group_name[each.value.location], "location") 
-  resource_group_name = lookup(var.resource_group_name[each.value.location], "rg") 
+  name                = each.value.name
+  resource_group_name = each.value.resource_group_name
+  location            = each.value.location
 
-  # Attach TLS Inspection - conditionally based on variable
-  # tls_inspection {
-  #   key_vault_secret_id = each.value.tls_inspection_key_vault_secret_id
-  # }
+  dynamic "intrusion_detection" {
+    for_each = try(each.value.intrusion_detection, null) != null ? [each.value.intrusion_detection] : []
 
-  # Enable Intrusion Detection (IDPS)
-  firewall_policy_intrusion_detection = {
-    mode = each.value.intrusion_detection_mode  # Use mode from the map
+    content {
+      mode = intrusion_detection.value.mode
 
-    traffic_bypass = each.value.intrusion_detection_traffic_bypass # Use bypass rules from the map
+      dynamic "signature_override" {  # Correct attribute name (singular)
+        for_each = try(intrusion_detection.value.signature_overrides, {})
+
+        content {
+          id    = signature_override.key
+          state = signature_override.value
+        }
+      }
+
+      dynamic "traffic_bypass" {
+        for_each = try(intrusion_detection.value.traffic_bypass, {})
+
+        content {
+          name                  = traffic_bypass.value.name
+          protocol              = traffic_bypass.value.protocol
+          destination_addresses = try(traffic_bypass.value.destination_addresses, null)
+          destination_ip_groups = try(traffic_bypass.value.destination_ip_groups, null)
+          source_addresses      = try(traffic_bypass.value.source_addresses, null)
+          source_ip_groups      = try(traffic_bypass.value.source_ip_groups, null)
+        }
+      }
+    }
   }
 }
 
 output "firewall_policy" {
-  value = module.firewall_policy
-  # This will output the details of the created firewall policies
+  value = azurerm_firewall_policy.this
 }
