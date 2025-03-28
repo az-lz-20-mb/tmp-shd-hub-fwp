@@ -12,14 +12,14 @@ resource "azurerm_firewall_policy" "this" {
     content {
       mode = intrusion_detection.value.mode
 
-      dynamic "signature_override" {  # Correct attribute name (singular)
-        for_each = try(intrusion_detection.value.signature_overrides, {})
+      # dynamic "signature_override" {  # Correct attribute name (singular)
+      #   for_each = try(intrusion_detection.value.signature_overrides, {})
 
-        content {
-          id    = signature_override.key
-          state = signature_override.value
-        }
-      }
+      #   content {
+      #     id    = signature_override.key
+      #     state = signature_override.value
+      #   }
+      # }
 
       dynamic "traffic_bypass" {
         for_each = try(intrusion_detection.value.traffic_bypass, {})

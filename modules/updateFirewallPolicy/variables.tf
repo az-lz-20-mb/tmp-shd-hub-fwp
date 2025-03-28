@@ -12,7 +12,6 @@ variable "firewall_policies" {
     location            = string
     intrusion_detection = optional(object({
       mode = optional(string, "Alert")
-      signature_overrides = optional(map(string))
       traffic_bypass = optional(object({
         name                  = string
         protocol              = string
