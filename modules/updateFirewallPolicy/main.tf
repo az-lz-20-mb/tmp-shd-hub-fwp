@@ -18,3 +18,8 @@ module "firewall_policy" {
     traffic_bypass = each.value.intrusion_detection_traffic_bypass # Use bypass rules from the map
   }
 }
+
+output "firewall_policy" {
+  value = module.firewall_policy
+  # This will output the details of the created firewall policies
+}
