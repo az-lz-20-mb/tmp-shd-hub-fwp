@@ -12,7 +12,7 @@ module "firewall_policy" {
   # }
 
   # Enable Intrusion Detection (IDPS)
-  intrusion_detection {
+  firewall_policy_intrusion_detection {
     mode = each.value.intrusion_detection_mode  # Use mode from the map
 
     traffic_bypass = each.value.intrusion_detection_traffic_bypass # Use bypass rules from the map
