@@ -21,14 +21,15 @@ resource "azurerm_firewall_policy" "this" {
         }
       }
 
-      dynamic "traffic_bypass" {
-        for_each = try(intrusion_detection.value.traffic_bypass, {})
-
+  dynamic "traffic_bypass" {
+        for_each = try(intrusion_detection.value.traffic_bypass, [])  # Ensure list input
+        
         content {
           name                  = traffic_bypass.value.name
           protocol              = traffic_bypass.value.protocol
           destination_addresses = try(traffic_bypass.value.destination_addresses, null)
           destination_ip_groups = try(traffic_bypass.value.destination_ip_groups, null)
+          destination_ports     = try(traffic_bypass.value.destination_ports, ["*"]) # Required field
           source_addresses      = try(traffic_bypass.value.source_addresses, null)
           source_ip_groups      = try(traffic_bypass.value.source_ip_groups, null)
         }
