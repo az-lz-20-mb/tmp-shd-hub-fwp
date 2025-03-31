@@ -11,15 +11,23 @@ variable "firewall_policies" {
     resource_group_name = string
     location            = string
     intrusion_detection = optional(object({
-      mode = optional(string, "Alert")
-      traffic_bypass = optional(object({
+      mode           = optional(string)
+      private_ranges = optional(list(string))
+      signature_overrides = optional(list(object({
+        id    = optional(string)
+        state = optional(string)
+      })))
+      traffic_bypass = optional(list(object({
+        description           = optional(string)
+        destination_addresses = optional(set(string))
+        destination_ip_groups = optional(set(string))
+        destination_ports     = optional(set(string))
         name                  = string
         protocol              = string
-        destination_addresses = optional(list(string))
-        destination_ip_groups = optional(list(string))
-        source_addresses      = optional(list(string))
-        source_ip_groups      = optional(list(string))
-      }))
+        source_addresses      = optional(set(string))
+        source_ip_groups      = optional(set(string))
+      })))
     }))
   }))
+  default = {}
 }

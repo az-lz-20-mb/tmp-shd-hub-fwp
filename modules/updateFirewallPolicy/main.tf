@@ -7,31 +7,33 @@ resource "azurerm_firewall_policy" "this" {
   location            = each.value.location
 
   dynamic "intrusion_detection" {
-    for_each = try(each.value.intrusion_detection, null) != null ? [each.value.intrusion_detection] : []
+    for_each = each.value.intrusion_detection == null ? [] : [each.value.intrusion_detection]
 
     content {
-      mode = intrusion_detection.value.mode
+      mode           = intrusion_detection.value.mode
+      private_ranges = intrusion_detection.value.private_ranges
 
-      dynamic "signature_overrides" {  # Correct attribute name (singular)
-        for_each = try(intrusion_detection.value.signature_overrides, {})
+      dynamic "signature_overrides" {
+        for_each = intrusion_detection.value.signature_overrides == null ? [] : intrusion_detection.value.signature_overrides
 
         content {
-          id    = signature_overrides.key
-          state = signature_overrides.value
+          id    = signature_overrides.value.id
+          state = signature_overrides.value.state
         }
       }
-
+  
   dynamic "traffic_bypass" {
-        for_each = try(intrusion_detection.value.traffic_bypass, [])  # Ensure list input
-        
+        for_each = intrusion_detection.value.traffic_bypass == null ? [] : intrusion_detection.value.traffic_bypass
+
         content {
           name                  = traffic_bypass.value.name
           protocol              = traffic_bypass.value.protocol
-          destination_addresses = try(traffic_bypass.value.destination_addresses, null)
-          destination_ip_groups = try(traffic_bypass.value.destination_ip_groups, null)
-          destination_ports     = try(traffic_bypass.value.destination_ports, ["*"]) # Required field
-          source_addresses      = try(traffic_bypass.value.source_addresses, null)
-          source_ip_groups      = try(traffic_bypass.value.source_ip_groups, null)
+          description           = traffic_bypass.value.description
+          destination_addresses = traffic_bypass.value.destination_addresses
+          destination_ip_groups = traffic_bypass.value.destination_ip_groups
+          destination_ports     = traffic_bypass.value.destination_ports
+          source_addresses      = traffic_bypass.value.source_addresses
+          source_ip_groups      = traffic_bypass.value.source_ip_groups
         }
       }
     }
